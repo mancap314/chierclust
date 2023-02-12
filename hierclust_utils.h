@@ -7,5 +7,6 @@
 
 void print_array(size_t nrows, size_t ncols, double arr[nrows][ncols]); 
 void print_node(struct Node* node);
+void print_distance_flatten(size_t flatten_size, struct dist distance_flatten[flatten_size]); 
 
 #endif

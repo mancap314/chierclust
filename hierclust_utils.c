@@ -16,6 +16,15 @@ void print_array(size_t nrows, size_t ncols, double arr[nrows][ncols]) {
     printf("]\n");
 }
 
+void print_distance_flatten(size_t flatten_size, struct dist distance_flatten[flatten_size]) {
+    printf("[");
+    for (size_t i = 0; i < flatten_size; i++) {
+        printf("(value: %f, rowind: %zu, colind: %zu)", distance_flatten[i].value, distance_flatten[i].rowind, distance_flatten[i].colind);
+        if (i < flatten_size - 1) printf(", ");
+    }
+    printf("]\n");
+}
+
 
 void print_node(struct Node* node) {
     size_t parent_id = (NULL != node->parent)? node->parent->index: 0;
