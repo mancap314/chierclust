@@ -32,5 +32,5 @@ void print_node(struct Node* node) {
     size_t child1_id = (NULL != node->children[1])? node->children[1]->index: 0;
 
 
-    printf("[Node id: %zu, parent.id: %zu, children[0].id: %zu, children[1].id: %zu]\n", node->index, parent_id, child0_id, child1_id);
+    printf("[Node id: %zu, level: %zu,  parent.id: %zu, children[0].id: %zu, children[1].id: %zu]\n", node->index, node->level, parent_id, child0_id, child1_id);
 }
