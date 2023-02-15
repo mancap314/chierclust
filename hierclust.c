@@ -133,7 +133,81 @@ double nodes_distance(struct Node *node_0, struct Node *node_1, size_t n_leaves,
             }
         }
     }
-
+    if (method == AVG_DIST) {
+        size_t n_distances = 0;
+        for (size_t i = 0; i < n_leaves_0; i++) {
+            for(size_t j = 0; j < n_leaves_1; j++) {
+                if (distances[i][j] < 0) continue;
+                dist += distances[i][j];
+                n_distances++;
+            }
+        }
+        if (n_distances > 0) dist /= (double)n_distances;
+    }
     return dist;
 }
 
+
+void build_tree(size_t n_nodes, size_t n_total_nodes, struct Node all_nodes[n_total_nodes], double distance_matrix[n_nodes][n_nodes], unsigned short int method, bool balanced) {
+    // Initialization
+    for (size_t i = 0; i < n_total_nodes; i++) {
+        struct Node node = all_nodes[i];
+        node.index = (i < n_nodes)? i + 1: 0;
+        node.parent = NULL;
+        node.children[0] = NULL;
+        node.children[1] = NULL;
+    }
+
+    double current_distance_matrix[n_nodes][n_nodes];
+    for (size_t i = 0; i < n_nodes; i++) {
+        for (size_t j = 0; j < n_nodes; j++) {
+            current_distance_matrix[i][j] = (j > i)? distance_matrix[i][j]: 0;
+        }
+    }
+    size_t n_orphan_nodes = n_nodes;
+    struct Node orphan_nodes[n_nodes];
+
+    size_t n_new_nodes = balanced? n_orphan_nodes / 2: 1;
+    struct Node new_nodes[n_new_nodes];
+    for (size_t i = 0; i < n_new_nodes; i++) new_nodes[i] = all_nodes[n_nodes + i];
+
+    for (size_t i = 0; i < n_nodes; i++) orphan_nodes[i] = all_nodes[i];
+    size_t start_new_nodes_ind = n_nodes + 1;
+
+    while (n_orphan_nodes > 1) {
+        
+        size_t flatten_size = n_orphan_nodes * (n_orphan_nodes - 1) / 2; 
+        struct dist distance_flatten[flatten_size];
+        flatten_distance_matrix(n_orphan_nodes, distance_matrix, distance_flatten);
+        
+        pairing(n_orphan_nodes, n_new_nodes, flatten_size, start_new_nodes_ind, distance_flatten, orphan_nodes, new_nodes);
+
+        // Update 
+
+        n_orphan_nodes = 0;
+        size_t i;
+        for (i = 0; i < n_total_nodes; i++) {
+            if (all_nodes[i].index == 0) break;
+            if (NULL != all_nodes[i].parent) continue;
+            orphan_nodes[n_orphan_nodes] = all_nodes[i];
+            n_orphan_nodes++;
+        }
+        n_new_nodes = balanced? n_orphan_nodes / 2: 1;
+        for (size_t j = 0; j < n_new_nodes; j++) new_nodes[j] = all_nodes[i+j];
+        start_new_nodes_ind = i + 1;
+
+        // Update current_distance_matrix
+        size_t i_ = 0, j_ = 0;
+        for (size_t i = 0; i < n_total_nodes; i++) {
+            if (all_nodes[i].index == 0) break;
+            if (NULL != all_nodes[i].parent) continue;
+            for (size_t j = i+1; j < n_total_nodes; j++) {
+                if (all_nodes[j].index == 0) break;
+                if (NULL != all_nodes[j].parent) continue;
+                current_distance_matrix[i_][j_] = nodes_distance(&all_nodes[i], &all_nodes[j], n_orphan_nodes, distance_matrix, method);
+                ++j_;
+            }
+            ++i_;
+        }
+    }
+}
