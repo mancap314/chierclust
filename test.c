@@ -6,7 +6,10 @@ void test_pairing() {
     printf("INFO: testing pairing()...\n");
     size_t n_nodes = 5;
     size_t n_new_nodes = 2;
-    size_t start_new_nodes_ind = n_nodes + 1;
+    size_t start_new_node = 0;
+    size_t start_new_nodes_ind = n_nodes;
+    size_t idx_orphan_nodes[n_nodes];
+    for (size_t i = 0; i < n_nodes; i++) idx_orphan_nodes[i] = i+1;
 
     double distance_matrix[n_nodes][n_nodes];
     for (size_t i = 0; i < n_nodes; i++) {
@@ -19,17 +22,11 @@ void test_pairing() {
     struct dist distance_flatten[flatten_size];
     flatten_distance_matrix(n_nodes, distance_matrix, distance_flatten);
 
-    struct Node nodes[n_nodes];
+    struct Node nodes[n_nodes+n_new_nodes];
     for (size_t i = 0; i < n_nodes; i++) {
-        nodes[i].index = i + 1;
-        nodes[i].level = 0;
-        nodes[i].parent = NULL;
-        nodes[i].children[0] = NULL;
-        nodes[i].children[1] = NULL;
+        struct Node node = {.index = i+1, .level = 0, .parent = NULL, .children = {NULL, NULL}};
+        nodes[i] = node;
     }
-
-    struct Node new_nodes[n_new_nodes];
-    
     printf("INFO: nodes (before pairing()):\n");
     for (size_t i = 0; i < n_nodes; i++) print_node(&nodes[i]);
 
@@ -38,10 +35,8 @@ void test_pairing() {
     printf("INFO: distance_flatten:\n");
     print_distance_flatten(flatten_size, distance_flatten);
 
-    pairing(n_nodes, n_new_nodes, flatten_size, start_new_nodes_ind, distance_flatten, nodes, new_nodes);
+    pairing(idx_orphan_nodes, start_new_node, n_new_nodes, flatten_size, &start_new_nodes_ind, distance_flatten, nodes);
 
-    printf("INFO: new_nodes (after pairing()):\n");
-    for (size_t i = 0; i < n_new_nodes; i++) print_node(&new_nodes[i]);
     printf("INFO: nodes (after pairing()):\n");
     for (size_t i = 0; i < n_nodes; i++) print_node(&nodes[i]);
 }
@@ -88,9 +83,32 @@ void test_find_leaves() {
 }
 
 
+void test_build_tree() {
+    printf("INFO: testing build_tree()...\n");
+    size_t n_nodes = 7;
+    size_t n_total_nodes = get_n_total_nodes(n_nodes);
+    struct Node all_nodes[n_total_nodes];
+    double distance_matrix[n_nodes][n_nodes];
+    for (size_t i = 0; i < n_nodes; i++) {
+        for (size_t j = 0; j < n_nodes; j++) {
+            distance_matrix[i][j] = (j > i) ? (i+1)*(j+1): 0;
+        }
+    }
+    unsigned int method = MIN_DIST;
+    bool balanced = false;
+
+    build_tree(n_nodes, n_total_nodes, all_nodes, distance_matrix,  method, balanced); 
+
+    printf("distance_matrix:\n");
+    print_array(n_nodes, n_nodes, distance_matrix);    
+    printf("\nResulting tree:\n");
+    for (size_t i = 0; i < n_total_nodes; i++) print_node(&all_nodes[i]);
+}
+
 int main(int argc, char* argv[argc+1]){
-    test_pairing();
-    test_find_leaves();
+    // test_pairing();
+    // test_find_leaves();
+    test_build_tree();
 
     return EXIT_SUCCESS;
 }

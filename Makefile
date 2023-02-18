@@ -8,7 +8,7 @@ test: hierclust.c hierclust_utils.c test.c $(DEPS)
 
 
 debug: hierclust.c hierclust_utils.c test.c $(DEPS)
-	$(CC) -o $@.o $^ $(CFLAGS) -g
+	$(CC) -o $@.o $^ $(CFLAGS) -g -O0
 	gdb $@.o
 
 
